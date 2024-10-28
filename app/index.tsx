@@ -1,20 +1,19 @@
-import { Text, View, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import WelcomeView from '@/views/WelcomeView';
+import LoginView from '@/views/LoginView';
+
 export default function Index() {
+  const [startScreen, setStartScreen] = useState<string>("welcome");
+
+  const toLogin = () => {
+    setStartScreen("login");
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Home screen</Text>
-    </View>
+    <>  
+      {startScreen == "welcome" && <WelcomeView onPress={toLogin} />}
+      {startScreen == "login" && <LoginView />}
+      {startScreen == "register"}
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#25292e',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    color: '#fff',
-  },
-});
