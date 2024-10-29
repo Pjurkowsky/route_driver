@@ -22,7 +22,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 32,
     borderRadius: 16,
-    elevation: 3,
     backgroundColor: Colors.Primary
   },
   text: {

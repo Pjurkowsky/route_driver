@@ -1,6 +1,6 @@
 import ButtonMain from '@/components/ButtonMain';
 import { Colors } from '@/constants/Colors';
-import { Text, View, StyleSheet, Button, ImageBackground } from 'react-native';
+import { Text, StyleSheet, ImageBackground } from 'react-native';
 
 const img = {uri: '../assets/images/RouteDriver.png'}
 

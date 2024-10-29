@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import WelcomeView from '@/views/WelcomeView';
-import LoginView from '@/views/LoginView';
+import LoginView from '@/views/CredentialsView';
 
 export default function Index() {
   const [startScreen, setStartScreen] = useState<string>("welcome");
@@ -10,10 +10,9 @@ export default function Index() {
   }
 
   return (
-    <>  
-      {startScreen == "welcome" && <WelcomeView onPress={toLogin} />}
-      {startScreen == "login" && <LoginView />}
-      {startScreen == "register"}
-    </>
+      <>
+        {startScreen == "welcome" && <WelcomeView onPress={toLogin} />}
+        {startScreen == "login" && <LoginView />}
+      </>
   );
 }

@@ -6,12 +6,13 @@ type props = {
     title?: string,
     placeholder?: string,
     password?: boolean,
+    maxHeight?: number,
 }
 
-export default function InputBox({onChangeText, title, placeholder, password} : props) {
+export default function InputBox({onChangeText, title, placeholder, password, maxHeight} : props) {
     return (
         <TextInput
-            style={[styles.inputBox, title ? styles.inputText : styles.placeholderText]}
+            style={[styles.inputBox, title !== '' ? styles.inputText : styles.placeholderText, {maxHeight: maxHeight}]}
             onChangeText={onChangeText}
             secureTextEntry={!!password}
             value={title}
@@ -21,12 +22,13 @@ export default function InputBox({onChangeText, title, placeholder, password} : 
 
 const styles = StyleSheet.create({
     inputBox: {
+        flex: 1,
         borderWidth: 1,
         borderRadius: 12,
-        fontSize: 96,
+        fontSize: 32,
         padding: 16,
-        margin: 10,
-        borderColor: '#000' 
+        borderColor: '#000',
+        width: '50%'
     },
     placeholderText: {
         fontWeight: 'regular',
