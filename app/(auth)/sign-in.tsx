@@ -5,18 +5,16 @@ import { Dimensions } from "react-native";
 import { router } from "expo-router";
 import { Button, TextInput } from "react-native-paper";
 
-const img = { uri: "../assets/images/RouteDriver.png" };
+const img = "@/assets/images/RouteDriver.png";
 const win = Dimensions.get("window");
 
 export default function CredentialsView() {
-
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
 
-
   return (
     <View style={styles.container_sign_in}>
-      <Image style={styles.image} source={img} />
+      <Image style={styles.image} source={require(img)} />
       <TextInput
         label="Login"
         value={login}

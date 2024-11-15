@@ -1,28 +1,35 @@
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, SafeAreaView, Dimensions } from "react-native";
 import { Avatar, Card, IconButton } from "react-native-paper";
+
+const win = Dimensions.get('window');
 
 export default function NotificationsScreen() {
   return (
-    <View style={styles.container}>
-  <Card style={{backgroundColor:"#fff", marginTop:10}}>
-        <Card.Title
-          title="New route has been added!"
-          left={(props) => <Avatar.Icon {...props} icon="folder" />}
-        />
-      </Card>
-      <Card style={{backgroundColor:"#fff", marginTop:10}}>
-        <Card.Title
-          title="New route has been added!"
-          left={(props) => <Avatar.Icon {...props} icon="folder" />}
-        />
-      </Card>
-      <Card style={{backgroundColor:"#fff",  marginTop:10}}>
-        <Card.Title
-          title="New route has been added!"
-          left={(props) => <Avatar.Icon {...props} icon="folder" />}
-        />
-      </Card>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <View style={{flex: 1, margin: win.width * 0.025, gap: 8}}>
+        <Card style={{backgroundColor:"#fff", alignContent: "center"}}>
+          <Card.Title
+            title="New route has been added!"
+            left={(props) => <Avatar.Icon {...props} icon="bell" />}
+            titleStyle={{textAlign: "left", textAlignVertical: "center"}}
+          />
+        </Card>
+        <Card style={{backgroundColor:"#fff", alignContent: "center"}}>
+          <Card.Title
+            title="New route has been added!"
+            left={(props) => <Avatar.Icon {...props} icon="bell" />}
+            titleStyle={{textAlign: "left", textAlignVertical: "center"}}
+          />
+        </Card>
+        <Card style={{backgroundColor:"#fff", alignContent: "center"}}>
+          <Card.Title
+            title="New route has been added!"
+            left={(props) => <Avatar.Icon {...props} icon="bell" />}
+            titleStyle={{textAlign: "left", textAlignVertical: "center"}}
+          />
+        </Card>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -31,7 +38,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     justifyContent: "flex-start",
-    alignItems: "center",
+    alignItems: "stretch",
+    gap: 8
   },
   text: {
     color: "#000",
