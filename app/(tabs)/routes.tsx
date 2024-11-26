@@ -1,10 +1,17 @@
-import React from 'react';
-import { SafeAreaView, StyleSheet, View, Dimensions } from 'react-native';
-import { Button, DataTable, Text, Searchbar } from 'react-native-paper';
+import React from "react";
+import { SafeAreaView, StyleSheet, View, Dimensions } from "react-native";
+import {
+  Button,
+  DataTable,
+  Text,
+  Searchbar,
+  ActivityIndicator,
+} from "react-native-paper";
 import { router, useNavigation } from "expo-router";
-import { useAppTheme } from '@/app/_layout';
-
-const win = Dimensions.get('window');
+import { useAppTheme } from "@/app/_layout";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/firebaseConfig";
+const win = Dimensions.get("window");
 
 export default function RoutesScreen() {
   const theme = useAppTheme();
@@ -14,77 +21,110 @@ export default function RoutesScreen() {
     numberOfItemsPerPageList[0]
     // 8
   );
-  const [searchQuery, setSearchQuery] = React.useState('');
+  const [searchQuery, setSearchQuery] = React.useState("");
 
-  const [items] = React.useState([
-    {
-      key: 1,
-      name: 'Cupcake',
-      calories: 356,
-      fat: 16,
-    },
-    {
-      key: 2,
-      name: 'Eclair',
-      calories: 262,
-      fat: 16,
-    },
-    {
-      key: 3,
-      name: 'Frozen yogurt',
-      calories: 159,
-      fat: 6,
-    },
-    {
-      key: 4,
-      name: 'Gingerbread',
-      calories: 305,
-      fat: 3.7,
-    },
-  ]);
+  const [routes, setRoutes] = React.useState<
+    { id: string; [key: string]: any }[]
+  >([]);
+  const [loading, setLoading] = React.useState(true);
+
+  const filteredRoutes = searchQuery
+    ? routes.filter(
+        ({ name, starting_at, stops, kilometers }) =>
+          !!name.includes(searchQuery) ||
+          starting_at.toString().includes(searchQuery) ||
+          stops.toString().includes(searchQuery) ||
+          kilometers.toString().includes(searchQuery)
+      )
+    : routes;
 
   const from = page * itemsPerPage;
-  const to = Math.min((page + 1) * itemsPerPage, items.length);
+  const to = Math.min((page + 1) * itemsPerPage, routes.length);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "routes"));
+        const routesData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setRoutes(routesData);
+      } catch (error) {
+        console.error("Error fetching routes:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   React.useEffect(() => {
     setPage(0);
   }, [itemsPerPage]);
-  
-  return (
-  <SafeAreaView style={styles.container}>
-    <View style={{flex: 1, margin: win.width * 0.025, gap: 8}}>
-    <Searchbar
-      placeholder="Search"
-      onChangeText={setSearchQuery}
-      value={searchQuery}
-    />
-    <DataTable style={{...(theme.table), flex: 1}}>
-      <DataTable.Header>
-        <DataTable.Title>Dessert</DataTable.Title>
-        <DataTable.Title numeric>Calories</DataTable.Title>
-        <DataTable.Title numeric>Fat</DataTable.Title>
-      </DataTable.Header>
 
-      {items.slice(from, to).map((item) => (
-          <DataTable.Row onPress={() => { router.replace(`/map/${item.key}`)}} key={item.key}>
-            <DataTable.Cell>{item.name}</DataTable.Cell>
-            <DataTable.Cell numeric>{item.calories}</DataTable.Cell>
-            <DataTable.Cell numeric>{item.fat}</DataTable.Cell>
-          </DataTable.Row>
-      ))}
-      <DataTable.Pagination
-        page={page}
-        numberOfPages={Math.ceil(items.length / itemsPerPage)}
-        onPageChange={setPage}
-        label={`${from + 1}-${to} of ${items.length}`}
-        numberOfItemsPerPageList={numberOfItemsPerPageList}
-        numberOfItemsPerPage={itemsPerPage}
-        onItemsPerPageChange={onItemsPerPageChange}
-        showFastPaginationControls
-        selectPageDropdownLabel={'Rows per page'}
-      />
-    </DataTable>
-    </View>
-  </SafeAreaView>
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#0066cc" />
+      </View>
+    );
+  }
+
+  function toDateTime(secs: number) {
+    var t = new Date(Date.UTC(1970, 0, 1)); // Epoch
+    t.setUTCSeconds(secs);
+    return (
+      t.toLocaleDateString(undefined) + " " + t.toLocaleTimeString(undefined)
+    );
+  }
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={{ flex: 1, margin: win.width * 0.025, gap: 8 }}>
+        <Searchbar
+          placeholder="Search"
+          onChangeText={setSearchQuery}
+          value={searchQuery}
+        />
+        <DataTable style={{ ...theme.table, flex: 1 }}>
+          <DataTable.Header>
+            <DataTable.Title>Name</DataTable.Title>
+            <DataTable.Title numeric>Starting at</DataTable.Title>
+            <DataTable.Title numeric>Stops</DataTable.Title>
+            <DataTable.Title numeric>Kilometers</DataTable.Title>
+          </DataTable.Header>
+
+          {filteredRoutes.slice(from, to).map((item) => (
+            <DataTable.Row
+              onPress={() => {
+                router.push(`/map/${item.id}`);
+              }}
+              key={item.id}
+            >
+              <DataTable.Cell>{item.name}</DataTable.Cell>
+              <DataTable.Cell numeric>
+                {toDateTime(item.starting_at.seconds)}
+              </DataTable.Cell>
+              <DataTable.Cell numeric>{item.route.length}</DataTable.Cell>
+              <DataTable.Cell numeric>{item.kilometers} km</DataTable.Cell>
+            </DataTable.Row>
+          ))}
+          <DataTable.Pagination
+            page={page}
+            numberOfPages={Math.ceil(filteredRoutes.length / itemsPerPage)}
+            onPageChange={setPage}
+            label={`${from + 1}-${to} of ${filteredRoutes.length}`}
+            numberOfItemsPerPageList={numberOfItemsPerPageList}
+            numberOfItemsPerPage={itemsPerPage}
+            onItemsPerPageChange={onItemsPerPageChange}
+            showFastPaginationControls
+            selectPageDropdownLabel={"Rows per page"}
+          />
+        </DataTable>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -103,5 +143,10 @@ const styles = StyleSheet.create({
   },
   data_table_text: {
     color: "#000",
-  }
+  },
+  loader: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });

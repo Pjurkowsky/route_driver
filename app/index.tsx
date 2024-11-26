@@ -1,66 +1,100 @@
 import { Colors } from "@/constants/Colors";
 import { router } from "expo-router";
-import { SafeAreaView, Text, StyleSheet, ImageBackground, Image, View, Dimensions } from "react-native";
+import {
+  SafeAreaView,
+  Text,
+  StyleSheet,
+  ImageBackground,
+  Image,
+  View,
+  Dimensions,
+} from "react-native";
 import { Button } from "react-native-paper";
 
-const img = "../assets/images/RouteDriver.png";
-const win = Dimensions.get('window');
+const logo = "../assets/images/RouteDriver.png";
+const homeScreen = "../assets/images/image.png";
+const win = Dimensions.get("window");
 
 export default function WelcomeView() {
   return (
     <SafeAreaView style={styles.container_welcome}>
-      <View style={{flex: 1, margin: win.width * 0.025, gap: 8}}>
-      <Image
-        source={require(img)}
+      <ImageBackground
+        source={require(homeScreen)}
+        style={styles.background}
         resizeMode="cover"
-        style={
-          {
-            flex: 1,
-            height: win.height * 0.25,
-            margin: 32,
-            // height: 100,
-            alignSelf: "center"
-            // width: win.width * 0.5,
-          }
-        }
-      />
-        <Text style={{flex: 1, alignItems: "center", alignContent: "center", textAlign: "center"}}>
-          <Text style={styles.text_main}>Your </Text>
-          <Text style={styles.text_main_prime}>Routes</Text>
-          <Text style={styles.text_main}>, Your</Text>
-          <Text style={styles.text_main_prime}> Way</Text>
-          <Text style={styles.text_main}>!</Text>
-        </Text>
-        <Button
-          mode="contained"
-          buttonColor={Colors.Primary}
-          textColor="#fff"
-          onPress={() => router.push("/sign-in")}
-          labelStyle={{ fontWeight: "bold", flex: 1, alignSelf: "stretch" }}
-        >
-          Get started now!
-        </Button>
-      </View>
-      </SafeAreaView>
+        imageStyle={{ opacity: 0.5 }}
+      >
+        <View style={styles.content}>
+          <Image
+            source={require(logo)}
+            resizeMode="cover"
+            style={styles.logo}
+          />
+          <Text style={styles.text_container}>
+            <Text style={styles.text_main}>Your </Text>
+            <Text style={styles.text_main_prime}>Routes</Text>
+            <Text style={styles.text_main}>, Your</Text>
+            <Text style={styles.text_main_prime}> Way</Text>
+            <Text style={styles.text_main}>!</Text>
+          </Text>
+          <Button
+            mode="contained"
+            buttonColor={Colors.Primary}
+            textColor="#fff"
+            onPress={() => router.push("/sign-in")}
+            labelStyle={{ fontWeight: "bold" }}
+            style={styles.button}
+          >
+            Get started now!
+          </Button>
+        </View>
+      </ImageBackground>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container_welcome: {
     flex: 1,
-    flexDirection: "column",
-    alignItems: "stretch",
-    justifyContent: "center",
     backgroundColor: "#FFF",
   },
+  background: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+  },
+  content: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+  logo: {
+    width: win.width * 0.6,
+    height: win.height * 0.25,
+    marginBottom: 20,
+  },
+  text_container: {
+    textAlign: "center",
+    marginVertical: 20,
+  },
   text_main: {
-    fontSize: 96,
+    fontSize: 40,
     color: "#FFF",
-    textShadowColor: Colors.Primary,
+    fontWeight: "700",
+    textShadowColor: "#000",
+    textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 4,
   },
   text_main_prime: {
-    fontSize: 96,
+    fontSize: 40,
+    fontWeight: "700",
     color: Colors.Primary,
+    textShadowColor: "#000",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 4,
+  },
+  button: {
+    marginTop: 30,
   },
 });

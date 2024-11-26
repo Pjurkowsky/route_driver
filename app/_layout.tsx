@@ -1,26 +1,62 @@
 import React from "react";
-import { PaperProvider,
+import {
+  PaperProvider,
   MD3LightTheme as DefaultTheme,
-  useTheme
- } from "react-native-paper";
+  useTheme,
+} from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import GlobalProvider from "../context/GlobalProvider";
 import { Stack } from "expo-router";
-import { StyleSheet, StatusBar } from "react-native";
+import { StyleSheet, StatusBar, Image, View, Text } from "react-native";
 import { Colors } from "@/constants/Colors";
 import Header from "@/components/header";
+import { Button } from "react-native-paper";
+import Icon from "react-native-vector-icons/MaterialIcons";
+
+const img = "../assets/images/RouteDriver.png";
 
 const RootLayout = () => {
   return (
     <PaperProvider theme={theme}>
       <SafeAreaProvider>
         <GlobalProvider>
-          <Stack screenOptions={{
-        headerStyle: {
-          backgroundColor: '#f4511e',
-          },
-          headerTitleAlign: "center"}}>
-            <Stack.Screen name="(tabs)" options={{ header: Header}}/>
+          <Stack
+            screenOptions={{
+              headerStyle: {
+                backgroundColor: "#fff",
+              },
+              headerTitleAlign: "center",
+            }}
+          >
+            <Stack.Screen
+              name="(tabs)"
+              options={{
+                headerLeft: () => (
+                  <Image style={{ ...styles.image }} source={require(img)} />
+                ),
+                headerTitle: "",
+                headerRight: () => (
+                  <View
+                    style={{
+                      flex: 1,
+                      flexDirection: "row-reverse",
+                      alignItems: "center",
+                      alignSelf: "stretch",
+                      gap: 10,
+                    }}
+                  >
+                    <Icon
+                      name={"person"}
+                      size={32}
+                      color={"#000"}
+                      style={{ alignSelf: "center" }}
+                    />
+                    <Text style={{ textAlign: "right" }}>PEPIKSON</Text>
+                  </View>
+                ),
+              }}
+            />
+            {/* <Stack.Screen name="(tabs)" options={{ header: Header, headerRight: () => <Button onPress={() => {}}> a </Button>}}/> */}
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="index" options={{ headerShown: false }} />
           </Stack>
@@ -46,17 +82,17 @@ const theme = {
   borderWidth: 1,
   table: {
     borderWidth: 1,
-    borderColor: '#000',
-    borderRadius: 4
+    borderColor: "#000",
+    borderRadius: 4,
   },
   // Specify custom property in nested object
   colors: {
     ...DefaultTheme.colors,
     primary: Colors.Primary,
-    textPrimary: '#000',
+    textPrimary: "#000",
     secondary: Colors.Secondary,
-    textSecondary: '#FFF',
-    background: "#FFF"
+    textSecondary: "#FFF",
+    background: "#FFF",
   },
 };
 
