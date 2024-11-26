@@ -1,5 +1,5 @@
 import * as React from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
 import MapView from "react-native-maps/lib/MapView";
 import { Marker } from "react-native-maps";
 import { collection, getDocs, Timestamp } from "firebase/firestore";
@@ -16,9 +16,12 @@ import {
   Text,
 } from "react-native-paper";
 import DraggableFlatList, {
-  RenderItemParams,
+  RenderItemParams, ScaleDecorator
 } from "react-native-draggable-flatlist";
 import { gestureHandlerRootHOC } from "react-native-gesture-handler";
+import { Colors } from "@/constants/Colors";
+
+const win = Dimensions.get("window");
 
 export default function DynamicRouteScreen() {
   // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
@@ -101,7 +104,7 @@ export default function DynamicRouteScreen() {
     { id: "4", name: "Stop 4" },
   ]);
   const ExampleWithHoc = gestureHandlerRootHOC(() => (
-    <View>
+    <View style={{flex: 2}}>
       <DraggableFlatList
         data={data}
         renderItem={renderItem}
@@ -112,26 +115,34 @@ export default function DynamicRouteScreen() {
   ));
 
   const renderItem = React.useCallback(
-    ({ item, index, drag, isActive }: RenderItemParams<Item>) => {
+    ({ item, getIndex, drag, isActive }: RenderItemParams<Item>) => {
       return (
-        <TouchableOpacity
-          style={{
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "red",
-          }}
-          onLongPress={drag}
-        >
-          <Text
+        <ScaleDecorator>
+          <TouchableOpacity
             style={{
-              fontWeight: "bold",
-              color: "white",
-              fontSize: 32,
+              alignItems: "center",
+              backgroundColor: "white",
+              borderColor: Colors.PrimaryLight,
+              borderRadius: 20,
+              borderWidth: 2,
+              marginHorizontal: win.width * 0.025,
+              marginVertical: 4,
             }}
+            onLongPress={drag}
           >
-            {item.name}
-          </Text>
-        </TouchableOpacity>
+            <Text
+              style={{
+                fontWeight: "bold",
+                color: Colors.Primary,
+                fontSize: 32,
+                // textShadowColor: "black",
+                // textShadowRadius: 3,
+              }}
+            >
+              {item.name}
+            </Text>
+          </TouchableOpacity>
+        </ScaleDecorator>
       );
     },
     []
@@ -256,15 +267,18 @@ export default function DynamicRouteScreen() {
           visible={visible}
           onDismiss={hideModal}
           contentContainerStyle={containerStyle}
+          style={styles.containerStyle}
         >
-          <Button
-            mode="contained"
-            onPress={hideModal}
-            style={{ alignSelf: "flex-end" }}
-          >
-            Close
-          </Button>
-          <ExampleWithHoc />
+          <View style={{ flex: 1, flexDirection: "column", alignContent: "center" }}>
+            <ExampleWithHoc />
+
+            <Button
+              mode="contained"
+              onPress={hideModal}
+            >
+              Close
+            </Button>
+          </View>
         </Modal>
       </Portal>
     </View>
@@ -280,6 +294,14 @@ const containerStyle = {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  containerStyle: {
+    backgroundColor: "#FFFA",
+    paddingVertical: 100,
+    paddingHorizontal: 32,
+    borderRadius: 10,
+    flex: 1,
+    flexDirection: "column",
   },
   text: {
     fontSize: 18,

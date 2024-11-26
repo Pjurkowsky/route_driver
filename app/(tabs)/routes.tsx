@@ -90,10 +90,10 @@ export default function RoutesScreen() {
         />
         <DataTable style={{ ...theme.table, flex: 1 }}>
           <DataTable.Header>
-            <DataTable.Title>Name</DataTable.Title>
-            <DataTable.Title numeric>Starting at</DataTable.Title>
-            <DataTable.Title numeric>Stops</DataTable.Title>
-            <DataTable.Title numeric>Kilometers</DataTable.Title>
+            <DataTable.Title style={{flex: 1}}>Name</DataTable.Title>
+            <DataTable.Title numeric style={{flex: 2, justifyContent: "center"}}>Starting at</DataTable.Title>
+            <DataTable.Title numeric style={{flex: 1}}>Stops</DataTable.Title>
+            <DataTable.Title numeric style={{flex: 1}}>Kilometers</DataTable.Title>
           </DataTable.Header>
 
           {filteredRoutes.slice(from, to).map((item) => (
@@ -103,12 +103,12 @@ export default function RoutesScreen() {
               }}
               key={item.id}
             >
-              <DataTable.Cell>{item.name}</DataTable.Cell>
-              <DataTable.Cell numeric>
+              <DataTable.Cell style={{flex: 1}}>{item.name}</DataTable.Cell>
+              <DataTable.Cell numeric style={{flex: 2}}>
                 {toDateTime(item.starting_at.seconds)}
               </DataTable.Cell>
-              <DataTable.Cell numeric>{item.route.length}</DataTable.Cell>
-              <DataTable.Cell numeric>{item.kilometers} km</DataTable.Cell>
+              <DataTable.Cell numeric style={{flex: 1}}>{item.route.length}</DataTable.Cell>
+              <DataTable.Cell numeric style={{flex: 1}}>{item.kilometers} km</DataTable.Cell>
             </DataTable.Row>
           ))}
           <DataTable.Pagination
