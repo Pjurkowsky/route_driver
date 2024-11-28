@@ -4,7 +4,7 @@ import MapView from "react-native-maps/lib/MapView";
 import { Marker } from "react-native-maps";
 import { collection, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
-import { useSearchParams } from "expo-router/build/hooks";
+import { useLocalSearchParams, useSearchParams } from "expo-router/build/hooks";
 import MapViewDirections from "react-native-maps-directions";
 import * as Linking from "expo-linking";
 import {
@@ -69,12 +69,15 @@ export default function DynamicRouteScreen() {
   // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
   // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
 
+  const { id } = useLocalSearchParams();
+
   type Coordinates = {
     latitude: number;
     longitude: number;
   };
   type Route = {
     geolocation: Coordinates;
+    name: string;
   };
 
   type RoutesData = {
@@ -87,9 +90,16 @@ export default function DynamicRouteScreen() {
 
   const [visible, setVisible] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
-  const [route, setRoute] = React.useState<Route[]>();
-  const [origin, setOrigin] = React.useState<Coordinates>();
-  const [destination, setDestination] = React.useState<Coordinates>();
+  const [routesData, setRoutesData] = React.useState<RoutesData>();
+  const origin = React.useMemo(
+    () => routesData?.route[0].geolocation, 
+    [routesData]
+  );
+  const destination = React.useMemo(
+    () => routesData?.route[routesData?.route.length - 1].geolocation, 
+    [routesData, id]
+  );
+
   const [start, setStart] = React.useState();
 
   type Item = {
@@ -103,16 +113,27 @@ export default function DynamicRouteScreen() {
     { id: "3", name: "Stop 3" },
     { id: "4", name: "Stop 4" },
   ]);
-  const ExampleWithHoc = gestureHandlerRootHOC(() => (
-    <View style={{flex: 2}}>
-      <DraggableFlatList
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => `draggable-item-${item.id}`}
-        onDragEnd={({ data }) => setData(data)}
-      />
-    </View>
-  ));
+  const ExampleWithHoc = gestureHandlerRootHOC(() => {
+    if (routesData?.route) {
+      return (
+        <View style={{flex: 2}}>
+          <DraggableFlatList
+            data={routesData?.route?.map(({geolocation, name}, index) => {
+                return {
+                  id: index.toString(), 
+                  name: name ?? `${geolocation.latitude} ${geolocation.longitude}`
+                }
+              })
+            }
+            renderItem={renderItem}
+            keyExtractor={(item, index) => `draggable-item-${item.id}`}
+            // onDragEnd={({ data }) => setData(data)}
+            onDragEnd={() => {}}
+          />
+        </View>
+      )
+    }
+  });
 
   const renderItem = React.useCallback(
     ({ item, getIndex, drag, isActive }: RenderItemParams<Item>) => {
@@ -148,29 +169,21 @@ export default function DynamicRouteScreen() {
     []
   );
 
-  const params = useSearchParams();
+  // const params = useSearchParams();
   React.useEffect(() => {
     const fetchData = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, "routes"));
-        const routesData: RoutesData[] = querySnapshot.docs.map((doc) => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            name: data.name,
-            route: data.route,
-            starting_at: data.starting_at,
-            kilometers: data.kilometers,
-          };
-        });
-        const routeId = params.get("id");
-        const selectedRoute = routesData.find((route) => route.id === routeId);
-        if (selectedRoute) {
-          setRoute(selectedRoute.route);
-          setOrigin(selectedRoute.route[0].geolocation);
-          setDestination(
-            selectedRoute.route[selectedRoute.route.length - 1].geolocation
-          );
+        const routesData = querySnapshot.docs.find((doc) => doc.id === id);
+
+        if (routesData) {
+          setRoutesData({
+            id: routesData.id,
+            name: routesData.data().name,
+            route: routesData.data().route,
+            starting_at: routesData.data().starting_at,
+            kilometers: routesData.data().kilometers,
+          })
         }
       } catch (error) {
         console.error("Error fetching routes:", error);
@@ -180,10 +193,11 @@ export default function DynamicRouteScreen() {
     };
 
     fetchData();
-  }, []);
+  }, [id]);
 
   const openGoogleMaps = () => {
-    if (!route) return;
+    if (!routesData) return;
+
     if (origin && destination) {
       const url = `https://www.google.com/maps/dir/?api=1&destination=${destination.latitude},${destination.longitude}`;
       Linking.openURL(url).catch((err) =>
@@ -200,41 +214,53 @@ export default function DynamicRouteScreen() {
 
   const hideModal = () => setVisible(false);
 
+  if (!origin) {
+    return (
+      <View style={styles.container}>
+      </View>
+    )
+  }
+
   return (
     <View style={styles.container}>
       <MapView
         style={styles.map}
-        initialRegion={{
+        initialRegion={
+        //   origin ? {
+        //   ...origin,
+        //   latitudeDelta: 0.05,
+        //   longitudeDelta: 0.05,
+        // } :
+         {
           latitude: 51.107883,
           longitude: 17.038538,
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         }}
       >
-        {route &&
-          route.map((route, index) => (
+        {routesData &&
+          routesData.route.map((route, index) => (
             <Marker
               key={index}
               coordinate={{
                 latitude: route.geolocation.latitude,
                 longitude: route.geolocation.longitude,
               }}
-              title={`Point ${index + 1}`}
+              title={route.name ?? `Point ${index + 1}`}
               description={`Lat: ${route.geolocation.latitude}, Lon: ${route.geolocation.longitude}`}
             >
-              {" "}
               <View style={styles.customMarker}>
                 <Text style={styles.markerText}>{index}</Text>
               </View>
             </Marker>
           ))}
-        {route && route.length > 0 && (
+        {routesData && routesData.route.length > 0 && (
           <MapViewDirections
             strokeWidth={3}
             strokeColor={"#00c9c7"}
-            origin={route[0].geolocation}
-            waypoints={route.slice(1, -1).map((point) => point.geolocation)}
-            destination={route[route.length - 1].geolocation}
+            origin={routesData.route[0].geolocation}
+            waypoints={routesData.route.slice(1, -1).map((point) => point.geolocation)}
+            destination={routesData.route[routesData.route.length - 1].geolocation}
             apikey={"chciałbyś"}
           />
         )}
@@ -272,12 +298,20 @@ export default function DynamicRouteScreen() {
           <View style={{ flex: 1, flexDirection: "column", alignContent: "center" }}>
             <ExampleWithHoc />
 
-            <Button
-              mode="contained"
-              onPress={hideModal}
-            >
-              Close
-            </Button>
+            <View style={{gap: 4}}>
+              <Button
+                mode="contained"
+                onPress={() => {}}
+              >
+                Save
+              </Button>
+              <Button
+                mode="contained"
+                onPress={hideModal}
+              >
+                Close
+              </Button>
+            </View>
           </View>
         </Modal>
       </Portal>
