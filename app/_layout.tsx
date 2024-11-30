@@ -5,7 +5,7 @@ import {
   useTheme,
 } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import GlobalProvider from "../context/GlobalProvider";
+import GlobalProvider, { useGlobalContext } from "../context/GlobalProvider";
 import { Stack } from "expo-router";
 import { StyleSheet, StatusBar, Image, View, Text } from "react-native";
 import { Colors } from "@/constants/Colors";
@@ -15,11 +15,34 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 
 const img = "../assets/images/RouteDriver.png";
 
+const HeaderRight = () => {
+  const { user }: any = useGlobalContext();
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        flexDirection: "row-reverse",
+        alignItems: "center",
+        alignSelf: "stretch",
+        gap: 10,
+      }}
+    >
+      {user?.photoBlob ? (
+        <Image source={{ uri: user?.photoBlob }} style={styles.image} />
+      ) : (
+        <Image style={styles.image} source={require(img)} />
+      )}
+      <Text style={{ textAlign: "right" }}>{user?.name || "Anonymous"}</Text>
+    </View>
+  );
+};
+
 const RootLayout = () => {
   return (
-    <PaperProvider theme={theme}>
-      <SafeAreaProvider>
-        <GlobalProvider>
+    <GlobalProvider>
+      <PaperProvider theme={theme}>
+        <SafeAreaProvider>
           <Stack
             screenOptions={{
               headerStyle: {
@@ -35,34 +58,16 @@ const RootLayout = () => {
                   <Image style={{ ...styles.image }} source={require(img)} />
                 ),
                 headerTitle: "",
-                headerRight: () => (
-                  <View
-                    style={{
-                      flex: 1,
-                      flexDirection: "row-reverse",
-                      alignItems: "center",
-                      alignSelf: "stretch",
-                      gap: 10,
-                    }}
-                  >
-                    <Icon
-                      name={"person"}
-                      size={32}
-                      color={"#000"}
-                      style={{ alignSelf: "center" }}
-                    />
-                    <Text style={{ textAlign: "right" }}>PEPIKSON</Text>
-                  </View>
-                ),
+                headerRight: () => <HeaderRight />,
               }}
             />
             {/* <Stack.Screen name="(tabs)" options={{ header: Header, headerRight: () => <Button onPress={() => {}}> a </Button>}}/> */}
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="index" options={{ headerShown: false }} />
           </Stack>
-        </GlobalProvider>
-      </SafeAreaProvider>
-    </PaperProvider>
+        </SafeAreaProvider>
+      </PaperProvider>
+    </GlobalProvider>
   );
 };
 

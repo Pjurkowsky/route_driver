@@ -14,21 +14,61 @@ import { Colors } from "@/constants/Colors";
 import { router } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { getAuth } from "firebase/auth";
-import { app } from "@/firebaseConfig";
+import { app, db } from "@/firebaseConfig";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { useGlobalContext } from "@/context/GlobalProvider";
 
 const logo = "../../assets/images/RouteDriver.png";
 const win = Dimensions.get("window");
 const homeScreen = "../../assets/images/image.png";
 
 export default function CredentialsView() {
-  const [login, setLogin] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const auth = getAuth(app);
 
-  const handleLogin = async () => {
+  const { setUser, setIsLogged } = useGlobalContext();
+
+  const handleLogin = async (
+    email: string,
+    password: string,
+    setUser: (user: any) => void,
+    setIsLogged: (isLogged: boolean) => void
+  ) => {
+    const auth = getAuth(app);
     try {
-      // const userCredential = await signInWithEmailAndPassword(auth, login, password);
-      // console.log("User signed in:", userCredential.user);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      console.log("User signed in:", user);
+
+      const userRef = doc(db, "users", user.uid);
+
+      const userDoc = await getDoc(userRef);
+
+      if (!userDoc.exists()) {
+        await setDoc(userRef, {
+          email: user.email,
+          createdAt: new Date().toISOString(),
+        });
+      } else {
+        await setDoc(
+          userRef,
+          {
+            email: user.email,
+          },
+          { merge: true }
+        );
+      }
+
+      setUser({
+        email: user.email,
+        uid: user.uid,
+      });
+      setIsLogged(true);
+
       router.push("/routes");
     } catch (error) {
       console.error("Error signing in:", (error as Error).message);
@@ -51,9 +91,9 @@ export default function CredentialsView() {
               source={require(logo)}
             />
             <TextInput
-              label="Login"
-              value={login}
-              onChangeText={(text) => setLogin(text)}
+              label="E-mail"
+              value={email}
+              onChangeText={(text) => setEmail(text)}
               keyboardType="email-address"
               autoCapitalize="none"
               style={{ width: "100%" }}
@@ -70,7 +110,7 @@ export default function CredentialsView() {
               mode="contained"
               buttonColor={Colors.Primary}
               textColor="#fff"
-              onPress={handleLogin}
+              onPress={() => handleLogin(email, password, setUser, setIsLogged)}
               style={{ width: "100%" }}
             >
               Log in

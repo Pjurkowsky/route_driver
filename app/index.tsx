@@ -31,9 +31,14 @@ export default function WelcomeView() {
             style={styles.logo}
           />
           <Text style={styles.text_container}>
-            {["Your ", "Routes", ", Your", " Way", "!"].map((val, index) =>
-              <Text key={val} style={index % 2 ? styles.text_main_prime : styles.text_main}>{val}</Text>
-              )}
+            {["Your ", "Routes", ", Your", " Way", "!"].map((val, index) => (
+              <Text
+                key={val}
+                style={index % 2 ? styles.text_main_prime : styles.text_main}
+              >
+                {val}
+              </Text>
+            ))}
           </Text>
           <Button
             mode="contained"
