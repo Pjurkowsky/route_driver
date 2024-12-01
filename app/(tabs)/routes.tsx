@@ -9,12 +9,15 @@ import {
 } from "react-native-paper";
 import { router, useNavigation } from "expo-router";
 import { useAppTheme } from "@/app/_layout";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, or, query, where } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import { db } from "@/firebaseConfig";
 const win = Dimensions.get("window");
 
 export default function RoutesScreen() {
   const theme = useAppTheme();
+  const auth = getAuth();
+
   const [page, setPage] = React.useState<number>(0);
   const [numberOfItemsPerPageList] = React.useState([2, 3, 4]);
   const [itemsPerPage, onItemsPerPageChange] = React.useState(
@@ -44,7 +47,9 @@ export default function RoutesScreen() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "routes"));
+        const q = query(collection(db, "routes"), where("userId", "==", auth?.currentUser?.uid.toString()));
+
+        const querySnapshot = await getDocs(q);
         const routesData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -58,7 +63,7 @@ export default function RoutesScreen() {
     };
 
     fetchData();
-  }, []);
+  }, [auth]);
 
   React.useEffect(() => {
     setPage(0);
