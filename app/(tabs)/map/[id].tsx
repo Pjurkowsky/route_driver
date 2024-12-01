@@ -2,7 +2,7 @@ import * as React from "react";
 import { View, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
 import MapView from "react-native-maps/lib/MapView";
 import { Marker } from "react-native-maps";
-import { collection, getDocs, Timestamp } from "firebase/firestore";
+import { collection, getDocs, query, Timestamp, where } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
 import { useLocalSearchParams, useSearchParams } from "expo-router/build/hooks";
 import MapViewDirections from "react-native-maps-directions";
@@ -20,6 +20,7 @@ import DraggableFlatList, {
 } from "react-native-draggable-flatlist";
 import { gestureHandlerRootHOC } from "react-native-gesture-handler";
 import { Colors } from "@/constants/Colors";
+import { getAuth } from "firebase/auth";
 
 const win = Dimensions.get("window");
 
@@ -70,6 +71,7 @@ export default function DynamicRouteScreen() {
   // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
 
   const { id } = useLocalSearchParams();
+  const auth = getAuth();
 
   type Coordinates = {
     latitude: number;
@@ -173,7 +175,9 @@ export default function DynamicRouteScreen() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "routes"));
+        const q = query(collection(db, "routes"), where("userId", "==", auth?.currentUser?.uid.toString()));
+
+        const querySnapshot = await getDocs(q);
         const routesData = querySnapshot.docs.find((doc) => doc.id === id);
 
         if (routesData) {
@@ -193,7 +197,7 @@ export default function DynamicRouteScreen() {
     };
 
     fetchData();
-  }, [id]);
+  }, [id, auth]);
 
   const openGoogleMaps = () => {
     if (!routesData) return;

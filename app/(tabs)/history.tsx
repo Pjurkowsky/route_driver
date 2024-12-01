@@ -3,11 +3,16 @@ import { SafeAreaView, Text, View, StyleSheet, Dimensions } from "react-native";
 import { Searchbar, DataTable } from "react-native-paper";
 import { router } from "expo-router";
 import { useAppTheme } from "@/app/_layout";
+import { getAuth } from "firebase/auth";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "@/firebaseConfig";
 
 const win = Dimensions.get("window");
 
 export default function HistoryScreen() {
   const theme = useAppTheme();
+  const auth = getAuth();
+
   const [page, setPage] = React.useState<number>(0);
   const [numberOfItemsPerPageList] = React.useState([2, 3, 4]);
   const [itemsPerPage, onItemsPerPageChange] = React.useState(
@@ -15,82 +20,94 @@ export default function HistoryScreen() {
   );
 
   const [searchQuery, setSearchQuery] = React.useState("");
+  const [routes, setRoutes] = React.useState<
+    { id: string; [key: string]: any }[]
+  >([]);
+  const [loading, setLoading] = React.useState(true);
 
-  const [items] = React.useState([
-    {
-      key: 1,
-      name: "Cupcake",
-      calories: 356,
-      fat: 16,
-    },
-    {
-      key: 2,
-      name: "Eclair",
-      calories: 262,
-      fat: 16,
-    },
-    {
-      key: 3,
-      name: "Frozen yogurt",
-      calories: 159,
-      fat: 6,
-    },
-    {
-      key: 4,
-      name: "Gingerbread",
-      calories: 305,
-      fat: 3.7,
-    },
-  ]);
-
-  const filteredItems = searchQuery
-    ? items.filter(
-        ({ name, calories, fat }) =>
+  const filteredRoutes = searchQuery
+    ? routes.filter(
+        ({ name, starting_at, route, kilometers }) =>
           !!name.includes(searchQuery) ||
-          calories.toString().includes(searchQuery) ||
-          fat.toString().includes(searchQuery)
+          starting_at.toString().includes(searchQuery) ||
+          route.length.toString().includes(searchQuery) ||
+          kilometers.toString().includes(searchQuery)
       )
-    : items;
+    : routes;
 
   const from = page * itemsPerPage;
-  const to = Math.min((page + 1) * itemsPerPage, items.length);
+  const to = Math.min((page + 1) * itemsPerPage, routes.length);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const q = query(collection(db, "routes"), where("userId", "==", auth?.currentUser?.uid.toString()));
+
+        const querySnapshot = await getDocs(q);
+        const routesData = querySnapshot.docs.filter((doc) => doc.data().status == "delivered").map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          userId: null
+        }));
+        setRoutes(routesData);
+      } catch (error) {
+        console.error("Error fetching routes:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [auth]);
+
   React.useEffect(() => {
     setPage(0);
   }, [itemsPerPage]);
 
+  function toDateTime(secs: number) {
+    var t = new Date(Date.UTC(1970, 0, 1)); // Epoch
+    t.setUTCSeconds(secs);
+    return (
+      t.toLocaleDateString(undefined) + " " + t.toLocaleTimeString(undefined)
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={{ flex: 1, margin: win.width * 0.025, gap: 8 }}>
-        <Text style={styles.text}>History screen</Text>
         <Searchbar
           placeholder="Search"
           onChangeText={setSearchQuery}
           value={searchQuery}
         />
         <DataTable style={{ ...theme.table, flex: 1 }}>
-          <DataTable.Header>
-            <DataTable.Title>Dessert</DataTable.Title>
-            <DataTable.Title numeric>Calories</DataTable.Title>
-            <DataTable.Title numeric>Fat</DataTable.Title>
+        <DataTable.Header>
+            <DataTable.Title style={{flex: 1}}>Name</DataTable.Title>
+            <DataTable.Title numeric style={{flex: 2, justifyContent: "center"}}>Starting at</DataTable.Title>
+            <DataTable.Title numeric style={{flex: 1}}>Stops</DataTable.Title>
+            <DataTable.Title numeric style={{flex: 1}}>Kilometers</DataTable.Title>
           </DataTable.Header>
 
-          {filteredItems.slice(from, to).map((item) => (
+          {filteredRoutes.slice(from, to).map((item) => (
             <DataTable.Row
               onPress={() => {
-                router.replace(`/map/${item.key}`);
+                router.replace(`/map/${item.id}`);
               }}
-              key={item.key}
+              key={item.id}
             >
-              <DataTable.Cell>{item.name}</DataTable.Cell>
-              <DataTable.Cell numeric>{item.calories}</DataTable.Cell>
-              <DataTable.Cell numeric>{item.fat}</DataTable.Cell>
+              <DataTable.Cell style={{flex: 1}}>{item.name}</DataTable.Cell>
+              <DataTable.Cell numeric style={{flex: 2}}>
+                {toDateTime(item.starting_at.seconds)}
+              </DataTable.Cell>
+              <DataTable.Cell numeric style={{flex: 1}}>{item.route.length}</DataTable.Cell>
+              <DataTable.Cell numeric style={{flex: 1}}>{item.kilometers} km</DataTable.Cell>
             </DataTable.Row>
           ))}
           <DataTable.Pagination
             page={page}
-            numberOfPages={Math.ceil(filteredItems.length / itemsPerPage)}
+            numberOfPages={Math.ceil(filteredRoutes.length / itemsPerPage)}
             onPageChange={setPage}
-            label={`${from + 1}-${to} of ${filteredItems.length}`}
+            label={`${from + 1}-${to} of ${filteredRoutes.length}`}
             numberOfItemsPerPageList={numberOfItemsPerPageList}
             numberOfItemsPerPage={itemsPerPage}
             onItemsPerPageChange={onItemsPerPageChange}

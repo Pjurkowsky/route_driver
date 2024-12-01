@@ -9,7 +9,7 @@ import {
 } from "react-native-paper";
 import { router, useNavigation } from "expo-router";
 import { useAppTheme } from "@/app/_layout";
-import { collection, getDocs, or, query, where } from "firebase/firestore";
+import { and, collection, getDocs, or, query, where } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { db } from "@/firebaseConfig";
 const win = Dimensions.get("window");
@@ -33,10 +33,10 @@ export default function RoutesScreen() {
 
   const filteredRoutes = searchQuery
     ? routes.filter(
-        ({ name, starting_at, stops, kilometers }) =>
+        ({ name, starting_at, route, kilometers }) =>
           !!name.includes(searchQuery) ||
           starting_at.toString().includes(searchQuery) ||
-          stops.toString().includes(searchQuery) ||
+          route.length.toString().includes(searchQuery) ||
           kilometers.toString().includes(searchQuery)
       )
     : routes;
@@ -50,9 +50,10 @@ export default function RoutesScreen() {
         const q = query(collection(db, "routes"), where("userId", "==", auth?.currentUser?.uid.toString()));
 
         const querySnapshot = await getDocs(q);
-        const routesData = querySnapshot.docs.map((doc) => ({
+        const routesData = querySnapshot.docs.filter((doc) => doc.data().status != "delivered").map((doc) => ({
           id: doc.id,
           ...doc.data(),
+          userId: null
         }));
         setRoutes(routesData);
       } catch (error) {
