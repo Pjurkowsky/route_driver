@@ -3,9 +3,7 @@ import { Button } from "react-native-paper";
 import { Colors } from "@/constants/Colors";
 import { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { app, db } from "@/firebaseConfig";
-import { getAuth } from "firebase/auth";
 import { doc, updateDoc } from "firebase/firestore";
 import { useGlobalContext } from "@/context/GlobalProvider";
 
@@ -18,7 +16,7 @@ export default function ProfileScreen() {
 
   const pickImageAsync = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       quality: 1,
     });
@@ -60,8 +58,6 @@ export default function ProfileScreen() {
       alert("User not logged in.");
     }
   };
-
-  console.log("User: ", user);
 
   return (
     <View style={styles.container}>

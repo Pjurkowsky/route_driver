@@ -2,10 +2,14 @@ import { Tabs } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Text, Image, StyleSheet } from 'react-native';
 import { HeaderRight } from '@/components/headerRight';
+import { usePathname } from "expo-router";
 
 const img = "../../assets/images/RouteDriver.png";
 
 export default function TabsLayout() {
+  // const path = usePathname();
+  // console.log(path);
+
   return (
     <Tabs
       screenOptions={({ route }) => ({

@@ -1,8 +1,8 @@
 import { app, db } from "@/firebaseConfig";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { getDownloadURL, getStorage, ref } from "firebase/storage";
 import React, { createContext, useContext, useState, useEffect } from "react";
+
 const GlobalContext = createContext({
   isLogged: false,
   setIsLogged: (isLogged: boolean) => {},
@@ -20,33 +20,44 @@ const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const auth = getAuth(app);
   useEffect(() => {
-    const auth = getAuth(app);
+    console.log("auth changed");
+    if (!auth.currentUser) {
+      setIsLogged(false);
+      setUser(null);
+      setLoading(false);
+    }
+    else {
+      console.log("has current user");
+      setIsLogged(true);
 
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        setIsLogged(true);
-        const userRef = doc(db, "users", firebaseUser.uid);
-        const userDoc = await getDoc(userRef);
-
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-
-          console.log("User data from Firestore:", userData);
-
-          setUser(userData);
+      const fetchData = async () => {
+        if (auth.currentUser) {
+          const userRef = doc(db, "users", auth.currentUser.uid.toString());
+          const userDoc = await getDoc(userRef);
+        
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+        
+            console.log("User data from Firestore:", userData);
+        
+            setUser(userData);
+          } else {
+            setUser(null);
+          }
         } else {
           setUser(null);
         }
-      } else {
-        setIsLogged(false);
-        setUser(null);
-      }
-      setLoading(false);
-    });
+      } 
+    
+      fetchData();
 
-    return unsubscribe;
-  }, []);
+      setLoading(false);
+    }
+  }, [auth.currentUser]);
+
+  console.log("GLOBAL PROV REFRESH");
 
   return (
     <GlobalContext.Provider

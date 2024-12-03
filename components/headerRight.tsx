@@ -1,12 +1,10 @@
-import GlobalProvider, { useGlobalContext } from "../context/GlobalProvider";
+import { useGlobalContext } from "../context/GlobalProvider";
 import { StyleSheet, StatusBar, Image, View, Text } from "react-native";
 
 const img = "../assets/images/RouteDriver.png";
 
 export const HeaderRight = () => {
-    const { user, loading }: any = useGlobalContext();
-  
-    console.log("HEADER RIGHT USER: ", user, loading);
+    const { user }: any = useGlobalContext();
   
     return (
       <View
