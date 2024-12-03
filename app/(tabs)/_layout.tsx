@@ -1,12 +1,19 @@
 import { Tabs } from 'expo-router';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { Text } from 'react-native';
+import { Text, Image, StyleSheet } from 'react-native';
+import { HeaderRight } from '@/components/headerRight';
+
+const img = "../../assets/images/RouteDriver.png";
 
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
-        headerShown: false,
+        headerLeft: () => (
+          <Image style={{ ...styles.image }} source={require(img)} />
+        ),
+        headerTitle: "",
+        headerRight: HeaderRight,
         tabBarIcon: ({ color, size }) => {
           let iconName;
 
@@ -55,3 +62,10 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  image: {
+    height: 100,
+    width: 100,
+  },
+});

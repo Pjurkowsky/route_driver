@@ -61,7 +61,7 @@ export default function ProfileScreen() {
     }
   };
 
-  console.log(user);
+  console.log("User: ", user);
 
   return (
     <View style={styles.container}>
