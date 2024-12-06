@@ -192,7 +192,7 @@ export default function DynamicRouteScreen() {
             destination={
               routesData.route[routesData.route.length - 1].geolocation
             }
-            apikey={"niedlapsa"}
+            apikey={"dlapanato"}
           />
         )}
       </MapView>
@@ -292,8 +292,8 @@ const styles = StyleSheet.create({
   },
   floatingButton: {
     position: "absolute",
-    bottom: 60,
-    right: 20,
+    bottom: 130,
+    right: 10,
     backgroundColor: "#0c6ccc",
   },
   cardActions: {
