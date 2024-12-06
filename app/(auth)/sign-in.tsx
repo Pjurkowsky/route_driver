@@ -23,8 +23,8 @@ const win = Dimensions.get("window");
 const homeScreen = "../../assets/images/image.png";
 
 export default function CredentialsView() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("dzepetto@gmail.com");
+  const [password, setPassword] = useState("lubieplacki123");
 
   const { setUser, setIsLogged } = useGlobalContext();
 
@@ -42,7 +42,7 @@ export default function CredentialsView() {
         password
       );
       const user = userCredential.user;
-      console.log("User signed in:", user);
+      console.log("User signed in:");
 
       const userRef = doc(db, "users", user.uid);
 

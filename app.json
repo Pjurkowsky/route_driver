@@ -2,6 +2,7 @@
   "expo": {
     "name": "route_driver",
     "slug": "route_driver",
+    "newArchEnabled": true,
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -18,7 +19,8 @@
         "googleMaps": {
           "apiKey": ""
         }
-      }
+      },
+      "bundleIdentifier": "com.anonymous.route-driver"
     },
     "android": {
       "adaptiveIcon": {
@@ -29,7 +31,8 @@
         "googleMaps": {
           "apiKey": ""
         }
-      }
+      },
+      "package": "com.anonymous.route_driver"
     },
     "web": {
       "bundler": "metro",

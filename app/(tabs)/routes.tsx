@@ -1,12 +1,6 @@
 import React from "react";
 import { SafeAreaView, StyleSheet, View, Dimensions } from "react-native";
-import {
-  Button,
-  DataTable,
-  Text,
-  Searchbar,
-  ActivityIndicator,
-} from "react-native-paper";
+import { DataTable, Searchbar, ActivityIndicator } from "react-native-paper";
 import { router, useNavigation } from "expo-router";
 import { useAppTheme } from "@/app/_layout";
 import { and, collection, getDocs, or, query, where } from "firebase/firestore";
@@ -19,10 +13,9 @@ export default function RoutesScreen() {
   const auth = getAuth();
 
   const [page, setPage] = React.useState<number>(0);
-  const [numberOfItemsPerPageList] = React.useState([2, 3, 4]);
+  const [numberOfItemsPerPageList] = React.useState([5, 6, 7]);
   const [itemsPerPage, onItemsPerPageChange] = React.useState(
     numberOfItemsPerPageList[0]
-    // 8
   );
   const [searchQuery, setSearchQuery] = React.useState("");
 
@@ -47,14 +40,19 @@ export default function RoutesScreen() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const q = query(collection(db, "routes"), where("userId", "==", auth?.currentUser?.uid.toString()));
+        const q = query(
+          collection(db, "routes"),
+          where("userId", "==", auth?.currentUser?.uid.toString())
+        );
 
         const querySnapshot = await getDocs(q);
-        const routesData = querySnapshot.docs.filter((doc) => doc.data().status != "delivered").map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          userId: null
-        }));
+        const routesData = querySnapshot.docs
+          .filter((doc) => doc.data().status != "delivered")
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            userId: null,
+          }));
         setRoutes(routesData);
       } catch (error) {
         console.error("Error fetching routes:", error);
@@ -96,10 +94,19 @@ export default function RoutesScreen() {
         />
         <DataTable style={{ ...theme.table, flex: 1 }}>
           <DataTable.Header>
-            <DataTable.Title style={{flex: 1}}>Name</DataTable.Title>
-            <DataTable.Title numeric style={{flex: 2, justifyContent: "center"}}>Starting at</DataTable.Title>
-            <DataTable.Title numeric style={{flex: 1}}>Stops</DataTable.Title>
-            <DataTable.Title numeric style={{flex: 1}}>Kilometers</DataTable.Title>
+            <DataTable.Title style={{ flex: 1 }}>Name</DataTable.Title>
+            <DataTable.Title
+              numeric
+              style={{ flex: 2, justifyContent: "center" }}
+            >
+              Starting at
+            </DataTable.Title>
+            <DataTable.Title numeric style={{ flex: 1 }}>
+              Stops
+            </DataTable.Title>
+            <DataTable.Title numeric style={{ flex: 1 }}>
+              Kilometers
+            </DataTable.Title>
           </DataTable.Header>
 
           {filteredRoutes.slice(from, to).map((item) => (
@@ -109,12 +116,16 @@ export default function RoutesScreen() {
               }}
               key={item.id}
             >
-              <DataTable.Cell style={{flex: 1}}>{item.name}</DataTable.Cell>
-              <DataTable.Cell numeric style={{flex: 2}}>
+              <DataTable.Cell style={{ flex: 1 }}>{item.name}</DataTable.Cell>
+              <DataTable.Cell numeric style={{ flex: 2 }}>
                 {toDateTime(item.starting_at.seconds)}
               </DataTable.Cell>
-              <DataTable.Cell numeric style={{flex: 1}}>{item.route.length}</DataTable.Cell>
-              <DataTable.Cell numeric style={{flex: 1}}>{item.kilometers} km</DataTable.Cell>
+              <DataTable.Cell numeric style={{ flex: 1 }}>
+                {item.route.length}
+              </DataTable.Cell>
+              <DataTable.Cell numeric style={{ flex: 1 }}>
+                {item.kilometers} km
+              </DataTable.Cell>
             </DataTable.Row>
           ))}
           <DataTable.Pagination

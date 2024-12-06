@@ -1,13 +1,12 @@
 import * as React from "react";
-import { View, Text, StyleSheet, Platform} from "react-native";
-import { Stack } from 'expo-router';
+import { View, Text, StyleSheet, Platform } from "react-native";
+import { Stack } from "expo-router";
 
 export default function DynamicRouteScreen() {
-  const routeId = window.location.pathname.split('/').pop();
-  console.log(routeId)
+  const routeId = window.location.pathname.split("/").pop();
   return (
     <View style={styles.container}>
-    <Stack.Screen
+      <Stack.Screen
         options={{
           // headerTitle: props => <LogoTitle {...props} />,
           headerRight: () => <Text> button</Text>,
@@ -31,7 +30,7 @@ const styles = StyleSheet.create({
     color: "#000",
   },
   map: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
 });

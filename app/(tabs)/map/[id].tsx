@@ -1,209 +1,135 @@
 import * as React from "react";
-import { View, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
-import MapView from "react-native-maps/lib/MapView";
+import { View, StyleSheet } from "react-native";
+import MapView from "react-native-maps";
 import { Marker } from "react-native-maps";
-import { collection, getDocs, query, Timestamp, where } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/firebaseConfig";
-import { useLocalSearchParams, useSearchParams } from "expo-router/build/hooks";
+import { useLocalSearchParams } from "expo-router/build/hooks";
 import MapViewDirections from "react-native-maps-directions";
 import * as Linking from "expo-linking";
-import {
-  Button,
-  Card,
-  IconButton,
-  Modal,
-  Portal,
-  Text,
-} from "react-native-paper";
-import DraggableFlatList, {
-  RenderItemParams, ScaleDecorator
-} from "react-native-draggable-flatlist";
-import { gestureHandlerRootHOC } from "react-native-gesture-handler";
-import { Colors } from "@/constants/Colors";
+import { Button, Card, IconButton, Text } from "react-native-paper";
 import { getAuth } from "firebase/auth";
-
-const win = Dimensions.get("window");
+import { useFocusEffect } from "expo-router";
+import { Coordinates, Route, RoutesData } from "@/app/types/routes";
+import MapList from "@/components/maplist";
+import PointModal from "@/components/point";
+import SkipDialog from "@/components/skipDialog";
+import EndRouteDialog from "@/components/endRouteDialog";
 
 export default function DynamicRouteScreen() {
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🏿🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-  // 🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕
-
   const { id } = useLocalSearchParams();
   const auth = getAuth();
+  const mapRef = React.useRef<MapView>(null);
 
-  type Coordinates = {
-    latitude: number;
-    longitude: number;
-  };
-  type Route = {
-    geolocation: Coordinates;
-    name: string;
-  };
-
-  type RoutesData = {
-    id: string;
-    name: string;
-    route: Route[];
-    starting_at: Timestamp;
-    kilometers: number;
-  };
-
-  const [visible, setVisible] = React.useState(false);
-  const [loading, setLoading] = React.useState(true);
   const [routesData, setRoutesData] = React.useState<RoutesData>();
   const origin = React.useMemo(
-    () => routesData?.route[0].geolocation, 
+    () => routesData?.route[0].geolocation,
     [routesData]
   );
-  const destination = React.useMemo(
-    () => routesData?.route[routesData?.route.length - 1].geolocation, 
-    [routesData, id]
-  );
+  const [destination, setDestination] = React.useState<Route>();
+  const zoomToInitialRegion = React.useCallback(() => {
+    if (origin && mapRef.current) {
+      console.log(origin);
+      mapRef.current.animateToRegion({
+        latitude: origin.latitude,
+        longitude: origin.longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      });
+    }
+  }, [origin]);
 
-  const [start, setStart] = React.useState();
+  React.useEffect(() => {
+    if (routesData) {
+      zoomToInitialRegion();
+    }
+  }, [routesData, zoomToInitialRegion]);
 
-  type Item = {
-    id: string;
-    name: string;
+  const handleContinue = () => {
+    console.log(destination);
+    if (routesData) {
+      const nextIndex =
+        routesData.route.findIndex(
+          (point) => point.geolocation === destination?.geolocation
+        ) + 1;
+      if (nextIndex < routesData.route.length) {
+        setDestination(routesData.route[nextIndex]);
+      } else {
+        setEndRouteDialogVisibility(true);
+      }
+    }
   };
 
-  const [data, setData] = React.useState([
-    { id: "1", name: "Stop 1" },
-    { id: "2", name: "Stop 2" },
-    { id: "3", name: "Stop 3" },
-    { id: "4", name: "Stop 4" },
-  ]);
-  const ExampleWithHoc = gestureHandlerRootHOC(() => {
-    if (routesData?.route) {
-      return (
-        <View style={{flex: 2}}>
-          <DraggableFlatList
-            data={routesData?.route?.map(({geolocation, name}, index) => {
-                return {
-                  id: index.toString(), 
-                  name: name ?? `${geolocation.latitude} ${geolocation.longitude}`
-                }
-              })
-            }
-            renderItem={renderItem}
-            keyExtractor={(item, index) => `draggable-item-${item.id}`}
-            // onDragEnd={({ data }) => setData(data)}
-            onDragEnd={() => {}}
-          />
-        </View>
-      )
-    }
-  });
+  const [start, setStart] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
+  const [isMapListVisible, setMapListVisibility] = React.useState(false);
+  const [isPointModalVisible, setPointModalVisibility] = React.useState(false);
+  const [isSkipDialogVisible, setSkipDialogVisibility] = React.useState(false);
+  const [isEndRouteDialogVisible, setEndRouteDialogVisibility] =
+    React.useState(false);
 
-  const renderItem = React.useCallback(
-    ({ item, getIndex, drag, isActive }: RenderItemParams<Item>) => {
-      return (
-        <ScaleDecorator>
-          <TouchableOpacity
-            style={{
-              alignItems: "center",
-              backgroundColor: "white",
-              borderColor: Colors.PrimaryLight,
-              borderRadius: 20,
-              borderWidth: 2,
-              marginHorizontal: win.width * 0.025,
-              marginVertical: 4,
-            }}
-            onLongPress={drag}
-          >
-            <Text
-              style={{
-                fontWeight: "bold",
-                color: Colors.Primary,
-                fontSize: 32,
-                // textShadowColor: "black",
-                // textShadowRadius: 3,
-              }}
-            >
-              {item.name}
-            </Text>
-          </TouchableOpacity>
-        </ScaleDecorator>
-      );
-    },
-    []
-  );
+  const [pointClicked, setPointClicked] = React.useState<Route>();
 
-  // const params = useSearchParams();
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const q = query(collection(db, "routes"), where("userId", "==", auth?.currentUser?.uid.toString()));
+  const handleStart = () => {
+    setDestination(routesData?.route[0]);
+    setStart(true);
+  };
+  const handleCancel = () => {
+    routesData?.route.forEach((point) => {
+      point.skip = false;
+    });
+    setDestination(undefined);
+    setStart(false);
+  };
 
-        const querySnapshot = await getDocs(q);
-        const routesData = querySnapshot.docs.find((doc) => doc.id === id);
+  const handleSkip = () => {
+    setSkipDialogVisibility(true);
+  };
 
-        if (routesData) {
-          setRoutesData({
-            id: routesData.id,
-            name: routesData.data().name,
-            route: routesData.data().route,
-            starting_at: routesData.data().starting_at,
-            kilometers: routesData.data().kilometers,
-          })
+  const handleMarkerClick = (point: Route) => {
+    setPointClicked(point);
+    setPointModalVisibility(true);
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchData = async () => {
+        try {
+          const q = query(
+            collection(db, "routes"),
+            where("userId", "==", auth?.currentUser?.uid.toString())
+          );
+
+          const querySnapshot = await getDocs(q);
+          console.log(id);
+
+          const routesData = querySnapshot.docs.find((doc) => doc.id === id);
+
+          if (routesData) {
+            setRoutesData({
+              id: routesData.id,
+              name: routesData.data().name,
+              route: routesData.data().route,
+              starting_at: routesData.data().starting_at,
+              kilometers: routesData.data().kilometers,
+            });
+            setDestination(routesData.data().route[0]);
+          }
+        } catch (error) {
+          console.error("Error fetching routes:", error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error("Error fetching routes:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
-    fetchData();
-  }, [id, auth]);
-
+      fetchData();
+    }, [id, auth])
+  );
   const openGoogleMaps = () => {
     if (!routesData) return;
 
     if (origin && destination) {
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${destination.latitude},${destination.longitude}`;
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${destination.geolocation.latitude},${destination.geolocation.longitude}`;
       Linking.openURL(url).catch((err) =>
         console.error("Error opening Google Maps", err)
       );
@@ -212,137 +138,136 @@ export default function DynamicRouteScreen() {
     }
   };
 
-  const handleStart = () => {
-    setVisible(true);
-  };
-
-  const hideModal = () => setVisible(false);
-
-  if (!origin) {
-    return (
-      <View style={styles.container}>
-      </View>
-    )
-  }
-
   return (
     <View style={styles.container}>
       <MapView
         style={styles.map}
-        initialRegion={
-        //   origin ? {
-        //   ...origin,
-        //   latitudeDelta: 0.05,
-        //   longitudeDelta: 0.05,
-        // } :
-         {
-          latitude: 51.107883,
-          longitude: 17.038538,
+        ref={mapRef}
+        initialRegion={{
+          latitude: origin?.latitude ?? 0,
+          longitude: origin?.longitude ?? 0,
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
         }}
       >
         {routesData &&
-          routesData.route.map((route, index) => (
-            <Marker
-              key={index}
-              coordinate={{
-                latitude: route.geolocation.latitude,
-                longitude: route.geolocation.longitude,
-              }}
-              title={route.name ?? `Point ${index + 1}`}
-              description={`Lat: ${route.geolocation.latitude}, Lon: ${route.geolocation.longitude}`}
-            >
-              <View style={styles.customMarker}>
-                <Text style={styles.markerText}>{index}</Text>
-              </View>
-            </Marker>
-          ))}
+          routesData.route.map((route, index) => {
+            return (
+              <Marker
+                key={index}
+                coordinate={{
+                  latitude: route.geolocation.latitude,
+                  longitude: route.geolocation.longitude,
+                }}
+                title={`Point ${index + 1}`}
+                description={`Lat: ${route.geolocation.latitude}, Lon: ${route.geolocation.longitude}`}
+                onPress={() => {
+                  handleMarkerClick(route);
+                }}
+              >
+                <View
+                  style={[
+                    styles.customMarker,
+                    route.geolocation === destination?.geolocation && {
+                      backgroundColor: "red",
+                    },
+                    route.skip && {
+                      backgroundColor: "yellow",
+                    },
+                  ]}
+                >
+                  <Text style={styles.markerText}>{index}</Text>
+                </View>
+              </Marker>
+            );
+          })}
         {routesData && routesData.route.length > 0 && (
           <MapViewDirections
             strokeWidth={3}
             strokeColor={"#00c9c7"}
             origin={routesData.route[0].geolocation}
-            waypoints={routesData.route.slice(1, -1).map((point) => point.geolocation)}
-            destination={routesData.route[routesData.route.length - 1].geolocation}
-            apikey={"chciałbyś"}
+            waypoints={routesData.route
+              .slice(1, -1)
+              .map((point) => point.geolocation)}
+            destination={
+              routesData.route[routesData.route.length - 1].geolocation
+            }
+            apikey={"niedlapsa"}
           />
         )}
       </MapView>
-      <IconButton
-        style={styles.floatingButton}
-        iconColor="white"
-        size={36}
-        icon="directions"
-        onPress={openGoogleMaps}
-      />
-      <Card mode="elevated" style={styles.cardActions}>
-        <Card.Actions>
+      {start && (
+        <IconButton
+          style={styles.floatingButton}
+          iconColor="white"
+          size={36}
+          icon="directions"
+          onPress={openGoogleMaps}
+        />
+      )}
+      <Card mode="elevated">
+        {start && (
+          <Card.Title
+            title="Next Stop"
+            subtitle={`${destination?.street} ${destination?.street_number}`}
+          />
+        )}
+        <Card.Actions style={styles.cardActions}>
           {start && (
             <View style={styles.buttons}>
-              <Button>Cancel</Button>
-              <Button>Continue</Button>
+              <Button onPress={handleCancel}>Cancel</Button>
+              <Button onPress={handleSkip}>Skip</Button>
+              <Button onPress={handleContinue}>Continue</Button>
             </View>
           )}
           {!start && (
             <View style={styles.buttons}>
-              <Button onPress={handleStart}>View Stops</Button>
-              <Button>Continue</Button>
+              <Button onPress={() => setMapListVisibility(true)}>
+                View Stops
+              </Button>
+              <Button onPress={handleStart}>Start</Button>
             </View>
           )}
         </Card.Actions>
       </Card>
-      <Portal>
-        <Modal
-          visible={visible}
-          onDismiss={hideModal}
-          contentContainerStyle={containerStyle}
-          style={styles.containerStyle}
-        >
-          <View style={{ flex: 1, flexDirection: "column", alignContent: "center" }}>
-            <ExampleWithHoc />
 
-            <View style={{gap: 4}}>
-              <Button
-                mode="contained"
-                onPress={() => {}}
-              >
-                Save
-              </Button>
-              <Button
-                mode="contained"
-                onPress={hideModal}
-              >
-                Close
-              </Button>
-            </View>
-          </View>
-        </Modal>
-      </Portal>
+      {routesData && (
+        <>
+          <MapList
+            visible={isMapListVisible}
+            setVisible={setMapListVisibility}
+            routesData={routesData}
+            setRoutesData={setRoutesData}
+          ></MapList>
+          {pointClicked && (
+            <PointModal
+              visible={isPointModalVisible}
+              setVisible={setPointModalVisibility}
+              pointData={pointClicked}
+            ></PointModal>
+          )}
+          {destination && (
+            <SkipDialog
+              visible={isSkipDialogVisible}
+              setVisible={setSkipDialogVisibility}
+              continueFunction={handleContinue}
+              pointData={destination}
+            ></SkipDialog>
+          )}
+          <EndRouteDialog
+            visible={isEndRouteDialogVisible}
+            setVisible={setEndRouteDialogVisibility}
+          ></EndRouteDialog>
+        </>
+      )}
     </View>
   );
 }
-const containerStyle = {
-  backgroundColor: "white",
-  padding: 20,
-  innerWidth: "80%",
-  borderRadius: 10,
-  flex: 1,
-};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  containerStyle: {
-    backgroundColor: "#FFFA",
-    paddingVertical: 100,
-    paddingHorizontal: 32,
-    borderRadius: 10,
-    flex: 1,
-    flexDirection: "column",
-  },
-  text: {
-    fontSize: 18,
+
     color: "#000",
   },
   map: {

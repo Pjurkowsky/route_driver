@@ -27,8 +27,7 @@ const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsLogged(false);
       setUser(null);
       setLoading(false);
-    }
-    else {
+    } else {
       console.log("has current user");
       setIsLogged(true);
 
@@ -36,12 +35,12 @@ const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
         if (auth.currentUser) {
           const userRef = doc(db, "users", auth.currentUser.uid.toString());
           const userDoc = await getDoc(userRef);
-        
+
           if (userDoc.exists()) {
             const userData = userDoc.data();
-        
-            console.log("User data from Firestore:", userData);
-        
+
+            // console.log("User data from Firestore:", userData);
+
             setUser(userData);
           } else {
             setUser(null);
@@ -49,8 +48,8 @@ const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
         } else {
           setUser(null);
         }
-      } 
-    
+      };
+
       fetchData();
 
       setLoading(false);
