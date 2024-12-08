@@ -11,8 +11,9 @@ export const HeaderRight = () => {
         flex: 1,
         flexDirection: "row-reverse",
         alignItems: "center",
-        alignSelf: "stretch",
+        // alignSelf: "stretch",
         gap: 10,
+        marginRight: 10,
       }}
     >
       {user?.photoBlob ? (
@@ -27,7 +28,7 @@ export const HeaderRight = () => {
 
 const styles = StyleSheet.create({
   image: {
-    height: 100,
-    width: 100,
+    height: 60,
+    width: 60,
   },
 });

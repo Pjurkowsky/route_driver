@@ -5,12 +5,12 @@ import { router, useNavigation } from "expo-router";
 import { useAppTheme } from "@/app/_layout";
 import { and, collection, getDocs, or, query, where } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { db } from "@/firebaseConfig";
+import { db, auth } from "@/firebaseConfig";
 const win = Dimensions.get("window");
 
 export default function RoutesScreen() {
   const theme = useAppTheme();
-  const auth = getAuth();
+  // const auth = getAuth();
 
   const [page, setPage] = React.useState<number>(0);
   const [numberOfItemsPerPageList] = React.useState([5, 6, 7]);

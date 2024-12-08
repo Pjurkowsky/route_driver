@@ -2,13 +2,13 @@ import { Text, View, StyleSheet, SafeAreaView, Dimensions } from "react-native";
 import { Avatar, Card, IconButton } from "react-native-paper";
 import { useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { db } from "@/firebaseConfig";
+import { db, auth } from "@/firebaseConfig";
 import { getAuth } from "firebase/auth";
 
 const win = Dimensions.get("window");
 
 export default function NotificationsScreen() {
-  const auth = getAuth();
+  // const auth = getAuth();
 
   const [notifications, setNotifications] = useState<
     { id: string; [key: string]: any }[]

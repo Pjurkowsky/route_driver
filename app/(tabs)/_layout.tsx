@@ -18,6 +18,7 @@ export default function TabsLayout() {
         ),
         headerTitle: "",
         headerRight: HeaderRight,
+        headerStyle: {minHeight: 60},
         tabBarIcon: ({ color, size }) => {
           let iconName;
 
@@ -69,7 +70,8 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   image: {
-    height: 100,
-    width: 100,
+    height: 60,
+    width: 60,
+    marginLeft: 10,
   },
 });

@@ -1,4 +1,4 @@
-import { app, db } from "@/firebaseConfig";
+import { app, auth, db } from "@/firebaseConfig";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import React, { createContext, useContext, useState, useEffect } from "react";
@@ -20,7 +20,7 @@ const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  const auth = getAuth(app);
+  // const auth = getAuth(app);
   useEffect(() => {
     console.log("auth changed");
     if (!auth.currentUser) {

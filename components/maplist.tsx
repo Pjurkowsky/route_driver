@@ -81,6 +81,7 @@ const MapList = ({
               borderRadius: 20,
               borderWidth: 2,
               marginVertical: 4,
+              paddingVertical: 4,
             }}
             onLongPress={drag}
           >
@@ -88,7 +89,7 @@ const MapList = ({
               style={{
                 fontWeight: "bold",
                 color: Colors.Primary,
-                fontSize: 32,
+                fontSize: 22,
               }}
             >
               {item.name}
@@ -116,7 +117,7 @@ const MapList = ({
           >
             <List />
 
-            <View style={{ gap: 4 }}>
+            <View style={{ gap: 4, marginTop: 4 }}>
               <Button mode="contained" onPress={handleSave}>
                 Save
               </Button>

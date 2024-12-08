@@ -13,8 +13,8 @@ import { Button, TextInput } from "react-native-paper";
 import { Colors } from "@/constants/Colors";
 import { router } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { getAuth } from "firebase/auth";
-import { app, db } from "@/firebaseConfig";
+// import { getAuth } from "firebase/auth";
+import { app, db, auth } from "@/firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useGlobalContext } from "@/context/GlobalProvider";
 
@@ -34,7 +34,7 @@ export default function CredentialsView() {
     setUser: (user: any) => void,
     setIsLogged: (isLogged: boolean) => void
   ) => {
-    const auth = getAuth(app);
+    // const auth = getAuth(app);
     try {
       const userCredential = await signInWithEmailAndPassword(
         auth,

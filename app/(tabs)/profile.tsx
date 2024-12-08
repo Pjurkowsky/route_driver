@@ -3,7 +3,7 @@ import { Button } from "react-native-paper";
 import { Colors } from "@/constants/Colors";
 import { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
-import { app, db } from "@/firebaseConfig";
+import { app, db, auth } from "@/firebaseConfig";
 import {
   addDoc,
   collection,
@@ -12,6 +12,8 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { useGlobalContext } from "@/context/GlobalProvider";
+import { signOut } from "firebase/auth";
+import { router } from "expo-router";
 
 export default function ProfileScreen() {
   const [selectedImage, setSelectedImage] = useState<string | undefined>(
@@ -148,7 +150,7 @@ export default function ProfileScreen() {
 
   const pickImageAsync = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
     });
@@ -200,32 +202,37 @@ export default function ProfileScreen() {
       {selectedImage && (
         <Image source={{ uri: selectedImage }} style={styles.image} />
       )}
-      <Button
-        mode="contained"
-        buttonColor={Colors.Primary}
-        textColor="#fff"
-        onPress={pickImageAsync}
-      >
-        Select Image
-      </Button>
-      <Button
-        mode="contained"
-        buttonColor={Colors.Primary}
-        textColor="#fff"
-        onPress={() => uploadUserProfileImage(selectedImage!)}
-        style={{ marginTop: 10 }}
-      >
-        Save
-      </Button>
-      {/* <Button
-        mode="contained"
-        buttonColor={Colors.Primary}
-        textColor="#fff"
-        onPress={() => createRoute()}
-        style={{ marginTop: 10 }}
-      >
-        chuj
-      </Button> */}
+      <View style={{gap: 10}}>
+        <Button
+          mode="contained"
+          buttonColor={Colors.Primary}
+          textColor="#fff"
+          onPress={pickImageAsync}
+        >
+          Select Image
+        </Button>
+        <Button
+          mode="contained"
+          buttonColor={Colors.Primary}
+          textColor="#fff"
+          onPress={() => uploadUserProfileImage(selectedImage!)}
+        >
+          Save
+        </Button>
+        <Button
+          mode="contained"
+          buttonColor="red"
+          textColor="#fff"
+          // onPress={() => createRoute()}
+          onPress={() => {
+            signOut(auth);
+            router.replace("/");
+          }}
+          style={{ marginTop: 10 }}
+        >
+          Log out
+        </Button>
+      </View>
     </View>
   );
 }
