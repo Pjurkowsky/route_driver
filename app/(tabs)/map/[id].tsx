@@ -52,6 +52,7 @@ export default function DynamicRouteScreen() {
         routesData.route.findIndex(
           (point) => point.geolocation === destination?.geolocation
         ) + 1;
+      routesData.route[nextIndex - 1].visted = true;
       if (nextIndex < routesData.route.length) {
         setDestination(routesData.route[nextIndex]);
       } else {
@@ -112,6 +113,7 @@ export default function DynamicRouteScreen() {
               route: routesData.data().route,
               starting_at: routesData.data().starting_at,
               kilometers: routesData.data().kilometers,
+              status: routesData.data().status,
             });
             setDestination(routesData.data().route[0]);
           }
@@ -138,8 +140,12 @@ export default function DynamicRouteScreen() {
     }
   };
 
-  const currentIndex = routesData?.route.findIndex((val, index) => 
-    (val.geolocation.latitude === destination?.geolocation.latitude) && (val.geolocation.longitude === destination?.geolocation.longitude)) ?? 0;
+  const currentIndex =
+    routesData?.route.findIndex(
+      (val, index) =>
+        val.geolocation.latitude === destination?.geolocation.latitude &&
+        val.geolocation.longitude === destination?.geolocation.longitude
+    ) ?? 0;
 
   return (
     <View style={styles.container}>
@@ -174,8 +180,8 @@ export default function DynamicRouteScreen() {
                     route.geolocation === destination?.geolocation && {
                       backgroundColor: "red",
                     },
-                    index < currentIndex && {
-                      backgroundColor: "grey"
+                    route.visted && {
+                      backgroundColor: "grey",
                     },
                     route.skip && {
                       backgroundColor: "yellow",
@@ -198,11 +204,11 @@ export default function DynamicRouteScreen() {
             destination={
               routesData.route[routesData.route.length - 1].geolocation
             }
-            apikey={"dlapanato"}
+            apikey={"AIzaSyBJEfPu5Hwns-524TXu_n4zcLLC9GHyyXg"}
           />
         )}
       </MapView>
-      {start && (
+      {start && routesData?.status === "available" && (
         <IconButton
           style={styles.floatingButton}
           iconColor="white"
@@ -212,14 +218,14 @@ export default function DynamicRouteScreen() {
         />
       )}
       <Card mode="elevated">
-        {start && (
+        {start && routesData?.status === "available" && (
           <Card.Title
             title="Next Stop"
             subtitle={`${destination?.street} ${destination?.street_number}`}
           />
         )}
         <Card.Actions style={styles.cardActions}>
-          {start && (
+          {start && routesData?.status === "available" && (
             <View style={styles.buttons}>
               <Button onPress={handleCancel}>Cancel</Button>
               <Button onPress={handleSkip}>Skip</Button>
@@ -231,7 +237,9 @@ export default function DynamicRouteScreen() {
               <Button onPress={() => setMapListVisibility(true)}>
                 View Stops
               </Button>
-              <Button onPress={handleStart}>Start</Button>
+              {routesData?.status === "available" && (
+                <Button onPress={handleStart}>Start</Button>
+              )}
             </View>
           )}
         </Card.Actions>
@@ -263,6 +271,7 @@ export default function DynamicRouteScreen() {
           <EndRouteDialog
             visible={isEndRouteDialogVisible}
             setVisible={setEndRouteDialogVisibility}
+            routes={routesData}
           ></EndRouteDialog>
         </>
       )}
@@ -290,7 +299,7 @@ const styles = StyleSheet.create({
     borderColor: "white",
     justifyContent: "center",
     alignItems: "center",
-    minWidth: 30
+    minWidth: 30,
   },
   markerText: {
     color: "white",

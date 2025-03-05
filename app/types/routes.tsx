@@ -12,6 +12,7 @@ export type Route = {
   description: string;
   order: Order;
   skip: boolean;
+  visted?: boolean;
 };
 
 export type RoutesData = {

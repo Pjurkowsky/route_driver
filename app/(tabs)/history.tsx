@@ -1,7 +1,7 @@
 import React from "react";
 import { SafeAreaView, Text, View, StyleSheet, Dimensions } from "react-native";
 import { Searchbar, DataTable } from "react-native-paper";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useAppTheme } from "@/app/_layout";
 import { getAuth } from "firebase/auth";
 import { collection, getDocs, query, where } from "firebase/firestore";
@@ -38,27 +38,34 @@ export default function HistoryScreen() {
   const from = page * itemsPerPage;
   const to = Math.min((page + 1) * itemsPerPage, routes.length);
 
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const q = query(collection(db, "routes"), where("userId", "==", auth?.currentUser?.uid.toString()));
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchData = async () => {
+        try {
+          const q = query(
+            collection(db, "routes"),
+            where("userId", "==", auth?.currentUser?.uid.toString())
+          );
 
-        const querySnapshot = await getDocs(q);
-        const routesData = querySnapshot.docs.filter((doc) => doc.data().status == "delivered").map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          userId: null
-        }));
-        setRoutes(routesData);
-      } catch (error) {
-        console.error("Error fetching routes:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+          const querySnapshot = await getDocs(q);
+          const routesData = querySnapshot.docs
+            .filter((doc) => doc.data().status == "delivered")
+            .map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+              userId: null,
+            }));
+          setRoutes(routesData);
+        } catch (error) {
+          console.error("Error fetching routes:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-    fetchData();
-  }, [auth]);
+      fetchData();
+    }, [auth])
+  );
 
   React.useEffect(() => {
     setPage(0);
@@ -81,11 +88,20 @@ export default function HistoryScreen() {
           value={searchQuery}
         />
         <DataTable style={{ ...theme.table, flex: 1 }}>
-        <DataTable.Header>
-            <DataTable.Title style={{flex: 1}}>Name</DataTable.Title>
-            <DataTable.Title numeric style={{flex: 2, justifyContent: "center"}}>Starting at</DataTable.Title>
-            <DataTable.Title numeric style={{flex: 1}}>Stops</DataTable.Title>
-            <DataTable.Title numeric style={{flex: 1}}>Kilometers</DataTable.Title>
+          <DataTable.Header>
+            <DataTable.Title style={{ flex: 1 }}>Name</DataTable.Title>
+            <DataTable.Title
+              numeric
+              style={{ flex: 2, justifyContent: "center" }}
+            >
+              Starting at
+            </DataTable.Title>
+            <DataTable.Title numeric style={{ flex: 1 }}>
+              Stops
+            </DataTable.Title>
+            <DataTable.Title numeric style={{ flex: 1 }}>
+              Kilometers
+            </DataTable.Title>
           </DataTable.Header>
 
           {filteredRoutes.slice(from, to).map((item) => (
@@ -95,12 +111,16 @@ export default function HistoryScreen() {
               }}
               key={item.id}
             >
-              <DataTable.Cell style={{flex: 1}}>{item.name}</DataTable.Cell>
-              <DataTable.Cell numeric style={{flex: 2}}>
+              <DataTable.Cell style={{ flex: 1 }}>{item.name}</DataTable.Cell>
+              <DataTable.Cell numeric style={{ flex: 2 }}>
                 {toDateTime(item.starting_at.seconds)}
               </DataTable.Cell>
-              <DataTable.Cell numeric style={{flex: 1}}>{item.route.length}</DataTable.Cell>
-              <DataTable.Cell numeric style={{flex: 1}}>{item.kilometers} km</DataTable.Cell>
+              <DataTable.Cell numeric style={{ flex: 1 }}>
+                {item.route.length}
+              </DataTable.Cell>
+              <DataTable.Cell numeric style={{ flex: 1 }}>
+                {item.kilometers} km
+              </DataTable.Cell>
             </DataTable.Row>
           ))}
           <DataTable.Pagination

@@ -1,7 +1,7 @@
 import React from "react";
 import { SafeAreaView, StyleSheet, View, Dimensions } from "react-native";
 import { DataTable, Searchbar, ActivityIndicator } from "react-native-paper";
-import { router, useNavigation } from "expo-router";
+import { router, useFocusEffect, useNavigation } from "expo-router";
 import { useAppTheme } from "@/app/_layout";
 import { and, collection, getDocs, or, query, where } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
@@ -37,32 +37,34 @@ export default function RoutesScreen() {
   const from = page * itemsPerPage;
   const to = Math.min((page + 1) * itemsPerPage, routes.length);
 
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const q = query(
-          collection(db, "routes"),
-          where("userId", "==", auth?.currentUser?.uid.toString())
-        );
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchData = async () => {
+        try {
+          const q = query(
+            collection(db, "routes"),
+            where("userId", "==", auth?.currentUser?.uid.toString())
+          );
 
-        const querySnapshot = await getDocs(q);
-        const routesData = querySnapshot.docs
-          .filter((doc) => doc.data().status != "delivered")
-          .map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-            userId: null,
-          }));
-        setRoutes(routesData);
-      } catch (error) {
-        console.error("Error fetching routes:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+          const querySnapshot = await getDocs(q);
+          const routesData = querySnapshot.docs
+            .filter((doc) => doc.data().status != "delivered")
+            .map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+              userId: null,
+            }));
+          setRoutes(routesData);
+        } catch (error) {
+          console.error("Error fetching routes:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
 
-    fetchData();
-  }, [auth]);
+      fetchData();
+    }, [auth])
+  );
 
   React.useEffect(() => {
     setPage(0);

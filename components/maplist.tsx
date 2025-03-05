@@ -118,9 +118,11 @@ const MapList = ({
             <List />
 
             <View style={{ gap: 4, marginTop: 4 }}>
-              <Button mode="contained" onPress={handleSave}>
-                Save
-              </Button>
+              {routesData.status !== "delivered" && (
+                <Button mode="contained" onPress={handleSave}>
+                  Save
+                </Button>
+              )}
               <Button
                 mode="contained"
                 onPress={() => {

@@ -23,8 +23,8 @@ const win = Dimensions.get("window");
 const homeScreen = "../../assets/images/image.png";
 
 export default function CredentialsView() {
-  const [email, setEmail] = useState("dzepetto@gmail.com");
-  const [password, setPassword] = useState("lubieplacki123");
+  const [email, setEmail] = useState();
+  const [password, setPassword] = useState();
 
   const { setUser, setIsLogged } = useGlobalContext();
 

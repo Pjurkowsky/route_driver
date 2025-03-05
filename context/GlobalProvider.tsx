@@ -54,7 +54,7 @@ const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({
 
       setLoading(false);
     }
-  }, [auth.currentUser]);
+  }, [auth?.currentUser]);
 
   console.log("GLOBAL PROV REFRESH");
 
